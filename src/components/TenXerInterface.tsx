@@ -119,9 +119,9 @@ export default function TenXerInterface() {
       />
 
       {/* Main Content */}
-      <div className="min-h-screen flex flex-col items-center justify-center p-8">
-        <div className="flex-1 flex items-center justify-center w-full max-w-4xl">
-          {viewMode === 'landing' ? (
+      {viewMode === 'landing' ? (
+        <div className="min-h-screen flex flex-col items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center w-full max-w-4xl">
             <div className="text-center space-y-8">
               <div 
                 className="cursor-pointer transition-transform duration-500 hover:scale-105"
@@ -141,33 +141,52 @@ export default function TenXerInterface() {
                 </p>
               </div>
             </div>
-          ) : (
+          </div>
+
+          {/* Bottom Input */}
+          <div className="w-full max-w-2xl mb-8">
+            <AskInput onSubmit={handleAskQuestion} />
+          </div>
+
+          {/* Pagination Dots */}
+          <div className="flex gap-2 mb-4">
+            {[0, 1, 2, 3, 4].map((index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex 
+                    ? 'bg-primary shadow-glow' 
+                    : 'bg-muted hover:bg-primary/50'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="min-h-screen flex">
+          {/* Left Side - Video */}
+          <div className="flex-1 relative overflow-hidden">
+            <video
+              className="w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              <source src="/your-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+
+          {/* Right Side - Interactive Hand */}
+          <div className="flex-1 relative flex items-center justify-center p-8">
             <RoboticHand 
               onInteraction={handlePointInteraction}
               isInteractive={true}
             />
-          )}
+          </div>
         </div>
-
-        {/* Bottom Input */}
-        <div className="w-full max-w-2xl mb-8">
-          <AskInput onSubmit={handleAskQuestion} />
-        </div>
-
-        {/* Pagination Dots */}
-        <div className="flex gap-2 mb-4">
-          {[0, 1, 2, 3, 4].map((index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentIndex 
-                  ? 'bg-primary shadow-glow' 
-                  : 'bg-muted hover:bg-primary/50'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
