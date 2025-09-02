@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import roboticHandImage from '@/assets/robotic-hand-new.png';
+import roboticHandImage from '@/assets/robotic-hand-final.png';
 
 interface InteractivePoint {
   id: string;
@@ -17,8 +17,8 @@ interface RoboticHandProps {
 const interactivePoints: InteractivePoint[] = [
   {
     id: 'finger-1',
-    x: 45,
-    y: 20,
+    x: 35,
+    y: 15,
     label: 'Index Finger Motor',
     code: `# Index Finger Control System
 class FingerMotor:
@@ -40,9 +40,50 @@ class FingerMotor:
         return self.execute_grip(safe_force)`
   },
   {
+    id: 'finger-2',
+    x: 50,
+    y: 12,
+    label: 'Middle Finger Motor',
+    code: `# Middle Finger Control System
+class MiddleFingerMotor:
+    def __init__(self, pin_number):
+        self.pin = pin_number
+        self.position = 0
+        self.precision_mode = True
+    
+    def execute_precision_grip(self):
+        """High precision grip control"""
+        return self.apply_controlled_force(85)
+    
+    def balance_grip_force(self, target_force):
+        """Balance force distribution across finger joints"""
+        joint_forces = self.calculate_joint_distribution(target_force)
+        return self.apply_joint_forces(joint_forces)`
+  },
+  {
+    id: 'finger-3',
+    x: 65,
+    y: 15,
+    label: 'Ring Finger Motor',
+    code: `# Ring Finger Control System
+class RingFingerMotor:
+    def __init__(self, pin_number):
+        self.pin = pin_number
+        self.support_mode = True
+    
+    def provide_grip_support(self, primary_fingers):
+        """Support primary fingers in grip operations"""
+        support_force = self.calculate_support_force(primary_fingers)
+        return self.apply_support_pressure(support_force)
+    
+    def stabilize_grip(self, grip_data):
+        """Stabilize overall hand grip"""
+        return self.adjust_position_for_stability(grip_data)`
+  },
+  {
     id: 'thumb',
-    x: 25,
-    y: 45,
+    x: 20,
+    y: 55,
     label: 'Thumb Actuator',
     code: `# Thumb Opposition System
 import numpy as np
@@ -66,8 +107,8 @@ class ThumbActuator:
   },
   {
     id: 'palm',
-    x: 40,
-    y: 60,
+    x: 50,
+    y: 45,
     label: 'Palm Sensor Array',
     code: `# Palm Pressure Distribution System
 class PalmSensorArray:
@@ -90,7 +131,7 @@ class PalmSensorArray:
   {
     id: 'wrist',
     x: 50,
-    y: 85,
+    y: 80,
     label: 'Wrist Rotation Module',
     code: `# Wrist Articulation Control
 class WristController:
