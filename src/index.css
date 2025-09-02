@@ -6,27 +6,27 @@
 
 @layer base {
   :root {
-    /* Dark futuristic theme */
-    --background: 220 27% 8%;
-    --foreground: 210 40% 98%;
+    /* Light clean theme */
+    --background: 0 0% 98%;
+    --foreground: 220 27% 15%;
 
-    --card: 220 27% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 27% 15%;
 
-    --popover: 220 27% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 27% 15%;
 
     /* Cyan-blue primary with glow */
     --primary: 193 100% 50%;
     --primary-foreground: 220 27% 8%;
     --primary-glow: 193 100% 70%;
 
-    /* Dark secondary */
-    --secondary: 220 27% 18%;
-    --secondary-foreground: 210 40% 98%;
+    /* Light secondary */
+    --secondary: 220 27% 95%;
+    --secondary-foreground: 220 27% 15%;
 
-    --muted: 220 27% 15%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 27% 92%;
+    --muted-foreground: 215 20% 45%;
 
     /* Bright accent */
     --accent: 193 100% 50%;
@@ -35,20 +35,20 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 27% 20%;
-    --input: 220 27% 15%;
+    --border: 220 27% 85%;
+    --input: 220 27% 95%;
     --ring: 193 100% 50%;
 
     --radius: 0.75rem;
 
     /* Custom design tokens */
     --gradient-primary: linear-gradient(135deg, hsl(193 100% 50%), hsl(193 100% 70%));
-    --gradient-bg: linear-gradient(180deg, hsl(220 27% 8%), hsl(220 27% 12%));
-    --gradient-card: linear-gradient(145deg, hsl(220 27% 12%), hsl(220 27% 15%));
+    --gradient-bg: linear-gradient(180deg, hsl(0 0% 98%), hsl(0 0% 95%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 98%));
     
     /* Shadows and glows */
     --shadow-glow: 0 0 40px hsl(193 100% 50% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(220 27% 8% / 0.5);
+    --shadow-card: 0 10px 30px -10px hsl(220 27% 80% / 0.2);
     --shadow-interactive: 0 5px 20px -5px hsl(193 100% 50% / 0.4);
     
     /* Animation */

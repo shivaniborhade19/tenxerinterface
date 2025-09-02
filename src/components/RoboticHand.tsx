@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import roboticHandImage from '@/assets/robotic-hand.jpg';
+import roboticHandImage from '@/assets/robotic-hand-new.png';
 
 interface InteractivePoint {
   id: string;
