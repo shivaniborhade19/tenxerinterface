@@ -22,7 +22,7 @@ export default function TenXerInterface() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleEnterInteractive = () => {
-    setViewMode('video-hand');
+    setViewMode('hand-only');
   };
 
   const handleExitInteractive = () => {
@@ -41,11 +41,11 @@ export default function TenXerInterface() {
   };
 
   const handleHomeClick = () => {
-    if (viewMode === 'video-hand') {
-      setViewMode('video-only');
-    } else if (viewMode === 'video-only') {
-      setViewMode('video-hand');
-    }
+    setViewMode('video-only');
+  };
+
+  const handleLandingHomeClick = () => {
+    setViewMode('video-only');
   };
 
   const handleAskQuestion = (question: string) => {
@@ -132,6 +132,19 @@ export default function TenXerInterface() {
       {/* Main Content */}
       {viewMode === 'landing' ? (
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
+          {/* Home Button - Top Right */}
+          <div className="absolute top-4 right-4 z-10">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={handleLandingHomeClick}
+              className="flex items-center gap-2 px-6 py-3"
+            >
+              <Home className="w-5 h-5" />
+              Home
+            </Button>
+          </div>
+
           <div className="flex-1 flex items-center justify-center w-full max-w-4xl">
             <div className="text-center space-y-8">
               <div 
