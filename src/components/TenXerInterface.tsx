@@ -14,7 +14,7 @@ interface InteractivePoint {
   code: string;
 }
 
-type ViewMode = 'landing' | 'interactive' | 'video-hand' | 'hand-only' | 'split';
+type ViewMode = 'landing' | 'interactive' | 'video-hand' | 'video-only' | 'hand-only' | 'split';
 
 export default function TenXerInterface() {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -42,8 +42,8 @@ export default function TenXerInterface() {
 
   const handleHomeClick = () => {
     if (viewMode === 'video-hand') {
-      setViewMode('hand-only');
-    } else if (viewMode === 'hand-only') {
+      setViewMode('video-only');
+    } else if (viewMode === 'video-only') {
       setViewMode('video-hand');
     }
   };
@@ -111,7 +111,7 @@ export default function TenXerInterface() {
         </div>
       </div>
 
-      {(viewMode === 'video-hand' || viewMode === 'hand-only') && (
+      {(viewMode === 'video-hand' || viewMode === 'video-only' || viewMode === 'hand-only') && (
         <div className="absolute top-4 right-4 z-10">
           <Button variant="outline" onClick={handleExitInteractive}>
             Exit
@@ -210,6 +210,44 @@ export default function TenXerInterface() {
                 Home
               </Button>
             </div>
+            {/* Ask Input - Always visible */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8">
+              <AskInput onSubmit={handleAskQuestion} />
+            </div>
+          </div>
+        </div>
+      ) : viewMode === 'video-only' ? (
+        <div className="min-h-screen flex">
+          {/* Full Screen Video */}
+          <div className="w-full relative overflow-hidden">
+            <video
+              className="w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              <source src="/your-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            
+            {/* Home Button */}
+            <div className="absolute bottom-8 right-8">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={handleHomeClick}
+                className="flex items-center gap-2 px-6 py-3"
+              >
+                <Home className="w-5 h-5" />
+                Home
+              </Button>
+            </div>
+            
+            {/* Ask Input - Always visible */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8">
+              <AskInput onSubmit={handleAskQuestion} />
+            </div>
           </div>
         </div>
       ) : viewMode === 'hand-only' ? (
@@ -235,6 +273,13 @@ export default function TenXerInterface() {
           </div>
         </div>
       ) : null}
+      
+      {/* Ask Input - Always visible on split view */}
+      {viewMode === 'split' && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8 z-50">
+          <AskInput onSubmit={handleAskQuestion} />
+        </div>
+      )}
     </div>
   );
 }
