@@ -4,6 +4,7 @@ import RoboticHand from './RoboticHand';
 import CodeEditor from './CodeEditor';
 import NavigationControls from './NavigationControls';
 import AskInput from './AskInput';
+import { Home } from 'lucide-react';
 
 interface InteractivePoint {
   id: string;
@@ -13,7 +14,7 @@ interface InteractivePoint {
   code: string;
 }
 
-type ViewMode = 'landing' | 'interactive' | 'split';
+type ViewMode = 'landing' | 'interactive' | 'video-hand' | 'hand-only' | 'split';
 
 export default function TenXerInterface() {
   const [viewMode, setViewMode] = useState<ViewMode>('landing');
@@ -21,7 +22,7 @@ export default function TenXerInterface() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleEnterInteractive = () => {
-    setViewMode('interactive');
+    setViewMode('video-hand');
   };
 
   const handleExitInteractive = () => {
@@ -35,8 +36,16 @@ export default function TenXerInterface() {
   };
 
   const handleCloseCode = () => {
-    setViewMode('interactive');
+    setViewMode('hand-only');
     setSelectedPoint(null);
+  };
+
+  const handleHomeClick = () => {
+    if (viewMode === 'video-hand') {
+      setViewMode('hand-only');
+    } else if (viewMode === 'hand-only') {
+      setViewMode('video-hand');
+    }
   };
 
   const handleAskQuestion = (question: string) => {
@@ -102,7 +111,7 @@ export default function TenXerInterface() {
         </div>
       </div>
 
-      {viewMode === 'interactive' && (
+      {(viewMode === 'video-hand' || viewMode === 'hand-only') && (
         <div className="absolute top-4 right-4 z-10">
           <Button variant="outline" onClick={handleExitInteractive}>
             Exit
@@ -110,13 +119,15 @@ export default function TenXerInterface() {
         </div>
       )}
 
-      {/* Navigation Controls */}
-      <NavigationControls
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        showPrevious={currentIndex > 0}
-        showNext={true}
-      />
+      {/* Navigation Controls - only show on landing page */}
+      {viewMode === 'landing' && (
+        <NavigationControls
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          showPrevious={currentIndex > 0}
+          showNext={true}
+        />
+      )}
 
       {/* Main Content */}
       {viewMode === 'landing' ? (
@@ -162,7 +173,7 @@ export default function TenXerInterface() {
             ))}
           </div>
         </div>
-      ) : (
+      ) : viewMode === 'video-hand' ? (
         <div className="min-h-screen flex">
           {/* Left Side - Video */}
           <div className="flex-1 relative overflow-hidden">
@@ -179,14 +190,51 @@ export default function TenXerInterface() {
           </div>
 
           {/* Right Side - Interactive Hand */}
-          <div className="flex-1 relative flex items-center justify-center p-8">
+          <div className="flex-1 relative flex flex-col items-center justify-center p-8">
+            <div className="flex-1 flex items-center justify-center">
+              <RoboticHand 
+                onInteraction={handlePointInteraction}
+                isInteractive={true}
+              />
+            </div>
+            
+            {/* Home Button */}
+            <div className="absolute bottom-8 right-8">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={handleHomeClick}
+                className="flex items-center gap-2 px-6 py-3"
+              >
+                <Home className="w-5 h-5" />
+                Home
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : viewMode === 'hand-only' ? (
+        <div className="min-h-screen flex items-center justify-center p-8">
+          <div className="relative">
             <RoboticHand 
               onInteraction={handlePointInteraction}
               isInteractive={true}
             />
+            
+            {/* Home Button */}
+            <div className="absolute -bottom-16 right-0">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={handleHomeClick}
+                className="flex items-center gap-2 px-6 py-3"
+              >
+                <Home className="w-5 h-5" />
+                Home
+              </Button>
+            </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
