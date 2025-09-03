@@ -41,7 +41,11 @@ export default function TenXerInterface() {
   };
 
   const handleHomeClick = () => {
-    setViewMode('video-only');
+    if (viewMode === 'hand-only') {
+      setViewMode('video-only');
+    } else if (viewMode === 'video-only') {
+      setViewMode('hand-only');
+    }
   };
 
   const handleLandingHomeClick = () => {
