@@ -5,6 +5,7 @@ import CodeEditor from './CodeEditor';
 import NavigationControls from './NavigationControls';
 import AskInput from './AskInput';
 import { Home } from 'lucide-react';
+import rukaHandImage from '@/assets/ruka-hand-black.png';
 
 interface InteractivePoint {
   id: string;
@@ -14,10 +15,10 @@ interface InteractivePoint {
   code: string;
 }
 
-type ViewMode = 'landing' | 'interactive' | 'video-hand' | 'video-only' | 'hand-only' | 'split';
+type ViewMode = 'ruka-hand' | 'landing' | 'interactive' | 'video-hand' | 'video-only' | 'hand-only' | 'split';
 
 export default function TenXerInterface() {
-  const [viewMode, setViewMode] = useState<ViewMode>('landing');
+  const [viewMode, setViewMode] = useState<ViewMode>('ruka-hand');
   const [selectedPoint, setSelectedPoint] = useState<InteractivePoint | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -58,11 +59,15 @@ export default function TenXerInterface() {
   };
 
   const handlePrevious = () => {
-    setCurrentIndex(Math.max(0, currentIndex - 1));
+    if (viewMode === 'landing') {
+      setViewMode('ruka-hand');
+    }
   };
 
   const handleNext = () => {
-    setCurrentIndex(currentIndex + 1);
+    if (viewMode === 'ruka-hand') {
+      setViewMode('landing');
+    }
   };
 
   if (viewMode === 'split' && selectedPoint) {
@@ -123,18 +128,45 @@ export default function TenXerInterface() {
         </div>
       )}
 
-      {/* Navigation Controls - only show on landing page */}
-      {viewMode === 'landing' && (
+      {/* Navigation Controls - show on ruka-hand and landing pages */}
+      {(viewMode === 'ruka-hand' || viewMode === 'landing') && (
         <NavigationControls
           onPrevious={handlePrevious}
           onNext={handleNext}
-          showPrevious={currentIndex > 0}
-          showNext={true}
+          showPrevious={viewMode === 'landing'}
+          showNext={viewMode === 'ruka-hand'}
         />
       )}
 
       {/* Main Content */}
-      {viewMode === 'landing' ? (
+      {viewMode === 'ruka-hand' ? (
+        <div className="min-h-screen flex flex-col items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center w-full max-w-4xl">
+            <div className="text-center space-y-8">
+              <div className="transition-transform duration-500 hover:scale-105">
+                <img 
+                  src={rukaHandImage} 
+                  alt="Ruka Prosthetic Hand" 
+                  className="w-full max-w-2xl mx-auto h-auto object-contain"
+                />
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-3xl font-bold text-foreground">
+                  Ruka Prosthetic System
+                </h2>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                  Advanced neural control interface for seamless prosthetic integration
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Input */}
+          <div className="w-full max-w-2xl mb-8">
+            <AskInput onSubmit={handleAskQuestion} />
+          </div>
+        </div>
+      ) : viewMode === 'landing' ? (
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
           {/* Home Button - Top Right */}
           <div className="absolute top-4 right-4 z-10">
