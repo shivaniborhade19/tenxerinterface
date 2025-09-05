@@ -4,8 +4,10 @@ import RoboticHand from './RoboticHand';
 import CodeEditor from './CodeEditor';
 import NavigationControls from './NavigationControls';
 import AskInput from './AskInput';
-import { Home } from 'lucide-react';
-import rukaHandImage from '@/assets/ruka-hand-black.png';
+import { Home, ArrowLeft } from 'lucide-react';
+import rukaHandImage from '@/assets/rukaa.jpeg';
+import extraImage from '@/assets/side bar.jpg';
+import previewHandImage from '@/assets/robotic_hand1.jpg';
 
 interface InteractivePoint {
   id: string;
@@ -15,21 +17,19 @@ interface InteractivePoint {
   code: string;
 }
 
-type ViewMode = 'ruka-hand' | 'landing' | 'interactive' | 'video-hand' | 'video-only' | 'hand-only' | 'split';
+type ViewMode =
+  | 'ruka-hand'
+  | 'hand-preview'
+  | 'landing'
+  | 'split'
+  | 'video-only';
 
 export default function TenXerInterface() {
   const [viewMode, setViewMode] = useState<ViewMode>('ruka-hand');
   const [selectedPoint, setSelectedPoint] = useState<InteractivePoint | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handleEnterInteractive = () => {
-    setViewMode('hand-only');
-  };
-
-  const handleExitInteractive = () => {
-    setViewMode('landing');
-    setSelectedPoint(null);
-  };
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [dotsClicked, setDotsClicked] = useState(false); // Track if dot was clicked
 
   const handlePointInteraction = (point: InteractivePoint) => {
     setSelectedPoint(point);
@@ -37,298 +37,233 @@ export default function TenXerInterface() {
   };
 
   const handleCloseCode = () => {
-    setViewMode('hand-only');
     setSelectedPoint(null);
+    setViewMode('hand-preview');
+    setCurrentIndex(1);
   };
 
   const handleHomeClick = () => {
-    if (viewMode === 'hand-only') {
+    if (!videoPlaying) {
+      setVideoPlaying(true);
       setViewMode('video-only');
-    } else if (viewMode === 'video-only') {
-      setViewMode('hand-only');
+    } else {
+      setVideoPlaying(false);
+      setViewMode('landing');
+      setCurrentIndex(2);
     }
   };
 
-  const handleLandingHomeClick = () => {
-    setViewMode('video-only');
+  const handleExitClick = () => {
+    setVideoPlaying(false);
+    setViewMode('hand-preview');
+    setCurrentIndex(1);
+  };
+
+  const handleBackFromVideo = () => {
+    setVideoPlaying(false);
+    setViewMode('ruka-hand');
+    setCurrentIndex(0);
   };
 
   const handleAskQuestion = (question: string) => {
     console.log('User asked:', question);
-    // Here you would implement the AI response logic
+  };
+
+  const handleDotClick = (index: number) => {
+    setCurrentIndex(index);
+    if (index === 0) setViewMode('ruka-hand');
+    else if (index === 1) setViewMode('hand-preview');
+    else setViewMode('landing');
+
+    // Shrink search bar only if landing page dot is clicked
+    setDotsClicked(index === 2);
   };
 
   const handlePrevious = () => {
-    if (viewMode === 'landing') {
-      setViewMode('ruka-hand');
-    }
+    if (currentIndex > 0) handleDotClick(currentIndex - 1);
   };
-
   const handleNext = () => {
-    if (viewMode === 'ruka-hand') {
-      setViewMode('landing');
-    }
+    if (currentIndex < 2) handleDotClick(currentIndex + 1);
   };
 
+  // Determine search bar style
+  const getSearchBarStyle = () => {
+    if (viewMode === 'ruka-hand' || viewMode === 'hand-preview' || viewMode === 'video-only') {
+      return { width: '60%', left: '50%', transform: 'translateX(-50%)' };
+    } else if (viewMode === 'landing') {
+      // Landing page always long & centered like first page
+      return { width: '60%', left: '50%', transform: 'translateX(-50%)' };
+    } else if (viewMode === 'split') {
+      return { width: '40%', left: '10%', transform: 'translateX(0%)' };
+    }
+    return { width: '60%', left: '50%', transform: 'translateX(-50%)' };
+  };
+
+  // Split view
   if (viewMode === 'split' && selectedPoint) {
     return (
-      <div className="min-h-screen bg-gradient-bg flex">
-        {/* Left side - Hand */}
-        <div className="flex-1 relative">
-          <div className="absolute top-4 left-4 z-10">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-foreground">TenXer</h1>
-              <span className="text-muted-foreground">|</span>
-              <span className="text-foreground">Amazing Hand</span>
+      <div className="min-h-screen bg-yellow-100 flex items-center justify-center p-8">
+        <div className="relative overflow-hidden bg-white rounded-[20px] shadow-md w-full max-w-4xl h-[90vh] p-6 flex">
+          <div className="flex-1 relative">
+            <div className="absolute top-4 left-4 z-10">
+              <div className="flex items-center gap-4">
+                <h1 className="text-xl font-bold text-foreground">TenXer</h1>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-foreground">Amazing Hand</span>
+              </div>
+            </div>
+            <div className="absolute top-4 right-4 z-10">
+              <Button variant="outline" onClick={handleCloseCode}>Exit</Button>
+            </div>
+            <div className="h-full flex items-center justify-center">
+              <RoboticHand onInteraction={handlePointInteraction} isInteractive />
             </div>
           </div>
-          
-          <div className="absolute top-4 right-4 z-10">
-            <Button variant="outline" onClick={handleCloseCode}>
-              Exit
-            </Button>
+          <div className="flex-1 p-4">
+            <CodeEditor code={selectedPoint.code} title={selectedPoint.label} onClose={handleCloseCode} />
           </div>
 
-          <div className="h-full p-8 flex items-center justify-center">
-            <RoboticHand 
-              onInteraction={handlePointInteraction}
-              isInteractive={true}
-            />
+          {/* Search bar small left for split/code */}
+          <div className="absolute bottom-4" style={getSearchBarStyle()}>
+            <AskInput onSubmit={handleAskQuestion} />
           </div>
-        </div>
-
-        {/* Right side - Code Editor */}
-        <div className="flex-1 p-4">
-          <CodeEditor
-            code={selectedPoint.code}
-            title={selectedPoint.label}
-            onClose={handleCloseCode}
-          />
         </div>
       </div>
     );
   }
 
+  // Main pages
   return (
-    <div className="min-h-screen bg-gradient-bg relative overflow-hidden">
-      {/* Header */}
-      <div className="absolute top-4 left-4 z-10">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-foreground">TenXer</h1>
-          <span className="text-muted-foreground">|</span>
-          <span className="text-foreground">Amazing Hand</span>
-        </div>
-      </div>
-
-      {(viewMode === 'video-hand' || viewMode === 'video-only' || viewMode === 'hand-only') && (
-        <div className="absolute top-4 right-4 z-10">
-          <Button variant="outline" onClick={handleExitInteractive}>
-            Exit
-          </Button>
-        </div>
-      )}
-
-      {/* Navigation Controls - show on ruka-hand and landing pages */}
-      {(viewMode === 'ruka-hand' || viewMode === 'landing') && (
-        <NavigationControls
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          showPrevious={viewMode === 'landing'}
-          showNext={viewMode === 'ruka-hand'}
-        />
-      )}
-
-      {/* Main Content */}
-      {viewMode === 'ruka-hand' ? (
-        <div className="min-h-screen flex flex-col items-center justify-center p-8">
-          <div className="flex-1 flex items-center justify-center w-full max-w-4xl">
-            <div className="text-center space-y-8">
-              <div className="transition-transform duration-500 hover:scale-105">
-                <img 
-                  src={rukaHandImage} 
-                  alt="Ruka Prosthetic Hand" 
-                  className="w-full max-w-2xl mx-auto h-auto object-contain"
-                />
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-foreground">
-                  Ruka Prosthetic System
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  Advanced neural control interface for seamless prosthetic integration
-                </p>
+    <div className="min-h-screen bg-yellow-100 flex items-center justify-center p-8 relative">
+      <div className="relative w-full max-w-4xl h-[90vh] overflow-hidden">
+        <div className="flex w-[300%] h-full transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentIndex * 33.3333}%)` }}>
+          {/* Page 0 */}
+          <div className="w-[33.3333%] flex-shrink-0 h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
+            <div className="absolute top-4 left-4 z-10">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground">TenXer</h1>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-foreground">Ruka Hand</span>
               </div>
             </div>
-          </div>
-
-          {/* Bottom Input */}
-          <div className="w-full max-w-2xl mb-8">
-            <AskInput onSubmit={handleAskQuestion} />
-          </div>
-        </div>
-      ) : viewMode === 'landing' ? (
-        <div className="min-h-screen flex flex-col items-center justify-center p-8">
-          {/* Home Button - Top Right */}
-          <div className="absolute top-4 right-4 z-10">
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={handleLandingHomeClick}
-              className="flex items-center gap-2 px-6 py-3"
-            >
-              <Home className="w-5 h-5" />
-              Home
-            </Button>
-          </div>
-
-          <div className="flex-1 flex items-center justify-center w-full max-w-4xl">
-            <div className="text-center space-y-8">
-              <div 
-                className="cursor-pointer transition-transform duration-500 hover:scale-105"
-                onClick={handleEnterInteractive}
-              >
-                <RoboticHand 
-                  onInteraction={handlePointInteraction}
-                  isInteractive={false}
-                />
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-foreground">
-                  Advanced Prosthetic Control System
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  Click on the robotic hand to explore interactive components and view the underlying control algorithms
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Input */}
-          <div className="w-full max-w-2xl mb-8">
-            <AskInput onSubmit={handleAskQuestion} />
-          </div>
-
-          {/* Pagination Dots */}
-          <div className="flex gap-2 mb-4">
-            {[0, 1, 2, 3, 4].map((index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
-                    ? 'bg-primary shadow-glow' 
-                    : 'bg-muted hover:bg-primary/50'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      ) : viewMode === 'video-hand' ? (
-        <div className="min-h-screen flex">
-          {/* Left Side - Video */}
-          <div className="flex-1 relative overflow-hidden">
-            <video
-              className="w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
-              <source src="/your-video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-
-          {/* Right Side - Interactive Hand */}
-          <div className="flex-1 relative flex flex-col items-center justify-center p-8">
             <div className="flex-1 flex items-center justify-center">
-              <RoboticHand 
-                onInteraction={handlePointInteraction}
-                isInteractive={true}
-              />
+              <img src={rukaHandImage} className="w-full max-w-2xl h-auto object-contain transition-transform duration-500 hover:scale-105" />
             </div>
-            
-            {/* Home Button */}
-            <div className="absolute bottom-8 right-8">
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={handleHomeClick}
-                className="flex items-center gap-2 px-6 py-3"
-              >
-                <Home className="w-5 h-5" />
-                Home
-              </Button>
-            </div>
-            {/* Ask Input - Always visible */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8">
+            <div className="absolute bottom-8" style={getSearchBarStyle()}>
               <AskInput onSubmit={handleAskQuestion} />
             </div>
           </div>
-        </div>
-      ) : viewMode === 'video-only' ? (
-        <div className="min-h-screen flex">
-          {/* Full Screen Video */}
-          <div className="w-full relative overflow-hidden">
-            <video
-              className="w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
-              <source src="/your-video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            
-            {/* Home Button */}
-            <div className="absolute bottom-8 right-8">
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={handleHomeClick}
-                className="flex items-center gap-2 px-6 py-3"
-              >
-                <Home className="w-5 h-5" />
-                Home
-              </Button>
+
+          {/* Page 1 */}
+          <div className="w-[33.3333%] flex-shrink-0 h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
+            <div className="absolute top-4 left-4 z-10">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground">TenXer</h1>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-foreground">Amazing Hand</span>
+              </div>
             </div>
-            
-            {/* Ask Input - Always visible */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8">
+            <div className="flex-1 flex items-center justify-center">
+              <div className="transition-transform duration-500 hover:scale-105 cursor-pointer" onClick={() => handleDotClick(2)}>
+                <img src={previewHandImage} className="w-full max-w-2xl h-auto object-contain" />
+              </div>
+            </div>
+            <div className="absolute bottom-8" style={getSearchBarStyle()}>
               <AskInput onSubmit={handleAskQuestion} />
             </div>
           </div>
-        </div>
-      ) : viewMode === 'hand-only' ? (
-        <div className="min-h-screen flex items-center justify-center p-8">
-          <div className="relative">
-            <RoboticHand 
-              onInteraction={handlePointInteraction}
-              isInteractive={true}
-            />
-            
-            {/* Home Button */}
-            <div className="absolute -bottom-16 right-0">
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={handleHomeClick}
-                className="flex items-center gap-2 px-6 py-3"
-              >
-                <Home className="w-5 h-5" />
-                Home
+
+          {/* Page 2 */}
+          <div className="w-[33.3333%] flex-shrink-0 h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
+            <div className="absolute top-4 left-4 z-10">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground">TenXer</h1>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-foreground">Amazing Hand</span>
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center hand-container">
+              <RoboticHand onInteraction={handlePointInteraction} isInteractive />
+            </div>
+
+            {/* Exit button */}
+            <div className="absolute top-4 right-4 z-20">
+              <Button onClick={handleExitClick} variant="outline">Exit</Button>
+            </div>
+
+            {/* Home button slightly above search bar */}
+            <div className="absolute bottom-20 right-6">
+              <Button onClick={handleHomeClick} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 font-bold">
+                <Home className="w-5 h-5" /> Home
               </Button>
+            </div>
+
+            {/* Search bar long & centered like first page */}
+            <div className="absolute bottom-8" style={getSearchBarStyle()}>
+              <AskInput onSubmit={handleAskQuestion} />
+            </div>
+
+            {/* Extra image below search bar */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+              <img src={extraImage} alt="Extra Hand" className="w-64 h-auto rounded-lg shadow-md" />
             </div>
           </div>
         </div>
-      ) : null}
-      
-      {/* Ask Input - Always visible on split view */}
-      {viewMode === 'split' && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8 z-50">
-          <AskInput onSubmit={handleAskQuestion} />
+
+        {/* Navigation arrows */}
+        <NavigationControls onPrevious={handlePrevious} onNext={handleNext} showPrevious={currentIndex > 0} showNext={currentIndex < 2} />
+
+        {/* Page dots */}
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {[0, 1, 2].map((index) => (
+            <div key={index} onClick={() => handleDotClick(index)} className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${index === currentIndex ? 'bg-primary' : 'bg-gray-300'}`} />
+          ))}
         </div>
-      )}
+
+        {/* Video overlay */}
+        {viewMode === 'video-only' && (
+  <div className="absolute inset-0 flex flex-col justify-between bg-white rounded-[20px] p-6">
+    {/* Header */}
+    <div className="absolute top-4 left-4 z-20">
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl font-bold text-foreground">TenXer</h1>
+        <span className="text-muted-foreground">|</span>
+        <span className="text-foreground">Amazing Hand</span>
+      </div>
+    </div>
+
+    <video className="w-full h-full object-cover rounded-[20px]" autoPlay loop muted playsInline>
+      <source src="/myvideo.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+            {/* Exit button */}
+            <div className="absolute top-4 right-4 z-20">
+              <Button onClick={handleExitClick} variant="outline">Exit</Button>
+            </div>
+
+            {/* Home button slightly above search bar */}
+            <div className="absolute bottom-20 right-6">
+              <Button onClick={handleHomeClick} className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-white font-bold">
+                <Home className="w-5 h-5" /> Home
+              </Button>
+            </div>
+
+            {/* Back arrow left middle */}
+            <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
+              <Button onClick={handleBackFromVideo} variant="outline">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Search bar */}
+            <div className="absolute bottom-8" style={getSearchBarStyle()}>
+              <AskInput onSubmit={handleAskQuestion} />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
