@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import roboticHandImage from '@/assets/robotic-hand-final.png';
+import { useState } from "react";
+import roboticHandImage from "@/assets/robotic_hand1.jpg";
 
 interface InteractivePoint {
   id: string;
@@ -10,82 +10,41 @@ interface InteractivePoint {
 }
 
 interface RoboticHandProps {
-  onInteraction: (point: InteractivePoint) => void;
-  isInteractive: boolean;
+  isInteractive?: boolean;
+  onInteraction?: (point: InteractivePoint) => void;
+  onBackgroundClick?: () => void; // ✅ new prop
 }
 
 const interactivePoints: InteractivePoint[] = [
   {
-    id: 'finger-1',
-    x: 35,
-    y: 15,
-    label: 'Index Finger Motor',
-    code: `# Index Finger Control System
-class FingerMotor:
-    def __init__(self, pin_number):
-        self.pin = pin_number
-        self.position = 0
-        self.max_force = 100
-    
-    def move_to_position(self, target_pos):
-        """Move finger to target position with safety checks"""
-        if 0 <= target_pos <= 180:
-            self.position = target_pos
-            return self.apply_motion()
-        return False
-    
-    def apply_force(self, force_level):
-        """Apply measured force for object interaction"""
-        safe_force = min(force_level, self.max_force)
-        return self.execute_grip(safe_force)`
-  },
-  {
-    id: 'finger-2',
-    x: 50,
-    y: 12,
-    label: 'Middle Finger Motor',
-    code: `# Middle Finger Control System
-class MiddleFingerMotor:
-    def __init__(self, pin_number):
-        self.pin = pin_number
-        self.position = 0
-        self.precision_mode = True
-    
-    def execute_precision_grip(self):
-        """High precision grip control"""
-        return self.apply_controlled_force(85)
-    
-    def balance_grip_force(self, target_force):
-        """Balance force distribution across finger joints"""
-        joint_forces = self.calculate_joint_distribution(target_force)
-        return self.apply_joint_forces(joint_forces)`
-  },
-  {
-    id: 'finger-3',
-    x: 65,
-    y: 15,
-    label: 'Ring Finger Motor',
-    code: `# Ring Finger Control System
+    id: "finger-3",
+    x: 69,
+    y: 47,
+    label: "Ring Finger Motor",
+    code: `
+# Ring Finger Control System
 class RingFingerMotor:
     def __init__(self, pin_number):
         self.pin = pin_number
         self.support_mode = True
-    
+
     def provide_grip_support(self, primary_fingers):
         """Support primary fingers in grip operations"""
         support_force = self.calculate_support_force(primary_fingers)
         return self.apply_support_pressure(support_force)
-    
+
     def stabilize_grip(self, grip_data):
         """Stabilize overall hand grip"""
-        return self.adjust_position_for_stability(grip_data)`
+        return self.adjust_position_for_stability(grip_data)
+    `,
   },
   {
-    id: 'thumb',
-    x: 20,
+    id: "thumb",
+    x: 28,
     y: 55,
-    label: 'Thumb Actuator',
-    code: `# Thumb Opposition System
+    label: "Thumb Actuator",
+    code: `
+# Thumb Opposition System
 import numpy as np
 
 class ThumbActuator:
@@ -93,106 +52,116 @@ class ThumbActuator:
         self.base_rotation = 0
         self.flex_angle = 0
         self.sensors = SensorArray()
-    
+
     def opposition_grip(self, target_object):
         """Execute precision grip with thumb opposition"""
         object_size = self.sensors.measure_object()
         optimal_angle = self.calculate_grip_angle(object_size)
-        
         return self.execute_opposition(optimal_angle)
-    
+
     def calculate_grip_angle(self, size):
         # Biomechanical grip optimization
-        return np.arctan(size / 2) * 180 / np.pi`
+        return np.arctan(size / 2) * 180 / np.pi
+    `,
   },
   {
-    id: 'palm',
+    id: "palm",
     x: 50,
-    y: 45,
-    label: 'Palm Sensor Array',
-    code: `# Palm Pressure Distribution System
+    y: 50,
+    label: "Palm Sensor Array",
+    code: `
+# Palm Pressure Distribution System
 class PalmSensorArray:
     def __init__(self):
         self.pressure_matrix = np.zeros((8, 8))
         self.temperature_sensors = []
         self.haptic_feedback = HapticEngine()
-    
+
     def read_pressure_map(self):
         """Generate real-time pressure distribution"""
         raw_data = self.sample_sensors()
         processed = self.filter_noise(raw_data)
         return self.normalize_pressure(processed)
-    
+
     def provide_feedback(self, pressure_map):
         """Send haptic feedback based on grip analysis"""
         grip_quality = self.analyze_grip(pressure_map)
-        return self.haptic_feedback.generate_response(grip_quality)`
+        return self.haptic_feedback.generate_response(grip_quality)
+    `,
   },
   {
-    id: 'wrist',
-    x: 50,
+    id: "wrist",
+    x: 65,
     y: 80,
-    label: 'Wrist Rotation Module',
-    code: `# Wrist Articulation Control
+    label: "Wrist Rotation Module",
+    code: `
+# Wrist Articulation Control
 class WristController:
     def __init__(self):
         self.rotation_axis = {'x': 0, 'y': 0, 'z': 0}
         self.motion_limits = {'flex': 85, 'extend': 70, 'rotate': 180}
         self.stabilization = GyroStabilizer()
-    
+
     def execute_movement(self, target_orientation):
         """Smooth wrist movement with stabilization"""
         if self.validate_movement(target_orientation):
             self.stabilization.compensate()
             return self.move_to_orientation(target_orientation)
-        
+
     def adaptive_positioning(self, task_requirements):
         """AI-driven wrist positioning for optimal task execution"""
         optimal_pose = self.ai_model.predict(task_requirements)
-        return self.execute_movement(optimal_pose)`
-  }
+        return self.execute_movement(optimal_pose)
+    `,
+  },
 ];
 
-export default function RoboticHand({ onInteraction, isInteractive }: RoboticHandProps) {
+export default function RoboticHand({
+  onInteraction,
+  isInteractive,
+  onBackgroundClick,   // ✅ include this
+}: RoboticHandProps) {
   const [hoveredPoint, setHoveredPoint] = useState<string | null>(null);
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative max-w-2xl animate-float">
+      <div className="relative max-w-2xl">
         <img
           src={roboticHandImage}
           alt="Advanced Robotic Prosthetic Hand"
-          className="w-full h-auto rounded-lg shadow-card"
+          className="w-full h-auto rounded-lg shadow-card cursor-pointer"
+          onClick={onBackgroundClick} // ✅ works now
         />
-        
+
         {isInteractive && (
           <div className="absolute inset-0">
             {interactivePoints.map((point) => (
               <button
                 key={point.id}
-                className={`absolute w-6 h-6 rounded-full border-2 border-primary transition-all duration-300 ${
+                className={`absolute w-9 h-9 rounded-full border-2 border-blue-500 transition-all duration-300 ${
                   hoveredPoint === point.id
-                    ? 'bg-primary scale-150 shadow-glow animate-pulse-glow'
-                    : 'bg-primary/20 hover:bg-primary/40 hover:scale-125'
+                    ? "scale-150"
+                    : "hover:scale-125"
                 }`}
                 style={{
                   left: `${point.x}%`,
                   top: `${point.y}%`,
-                  transform: 'translate(-50%, -50%)',
+                  transform: "translate(-50%, -50%)",
                 }}
                 onMouseEnter={() => setHoveredPoint(point.id)}
                 onMouseLeave={() => setHoveredPoint(null)}
-                onClick={() => onInteraction(point)}
-              >
-                <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
-              </button>
+                onClick={(e) => {
+                  e.stopPropagation(); // ✅ prevent triggering background video
+                  onInteraction?.(point);
+                }}
+              />
             ))}
-            
+
             {hoveredPoint && (
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
                 <div className="bg-card border border-border rounded-lg px-4 py-2 shadow-card">
                   <p className="text-sm text-foreground font-medium">
-                    {interactivePoints.find(p => p.id === hoveredPoint)?.label}
+                    {interactivePoints.find((p) => p.id === hoveredPoint)?.label}
                   </p>
                 </div>
               </div>

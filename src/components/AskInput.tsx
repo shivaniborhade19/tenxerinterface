@@ -1,42 +1,32 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
 
 interface AskInputProps {
-  onSubmit: (question: string) => void;
-  placeholder?: string;
+  onSubmit: (value: string) => void;
+  className?: string;
 }
 
-export default function AskInput({ onSubmit, placeholder = "Ask Anything" }: AskInputProps) {
-  const [question, setQuestion] = useState('');
+export default function AskInput({ onSubmit, className }: AskInputProps) {
+  const [value, setValue] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (question.trim()) {
-      onSubmit(question.trim());
-      setQuestion('');
+    if (value.trim()) {
+      onSubmit(value);
+      setValue("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-      <div className="relative">
-        <Input
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder={placeholder}
-          className="pr-12 h-12 bg-card/80 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:shadow-interactive text-base"
-        />
-        <Button
-          type="submit"
-          size="sm"
-          className="absolute right-2 top-2 h-8 w-8 p-0"
-          disabled={!question.trim()}
-        >
-          <Send className="w-4 h-4" />
-        </Button>
-      </div>
+    <form onSubmit={handleSubmit} className="w-full">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Ask something..."
+        className={`w-full max-w-4xl rounded-lg px-4 py-3 text-foreground 
+            placeholder-gray-500 focus:outline-none focus:ring-2 
+            focus:ring-gray-400 bg-gray-200 -ml-16 ${className}`}
+      />
     </form>
   );
 }

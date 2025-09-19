@@ -12,7 +12,7 @@ export default function NavigationControls({
   onPrevious,
   onNext,
   showPrevious,
-  showNext
+  showNext,
 }: NavigationControlsProps) {
   return (
     <>
@@ -20,21 +20,25 @@ export default function NavigationControls({
         <Button
           variant="outline"
           size="lg"
-          className="absolute left-8 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full border-primary/30 hover:border-primary hover:shadow-interactive transition-all duration-300"
+          className="absolute left-20 top-1/2 transform -translate-y-1/2 
+                     w-12 h-12 rounded-full border-gray-300 hover:border-gray-400 
+                     hover:shadow-md transition-all duration-300 bg-white"
           onClick={onPrevious}
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-6 h-6 text-gray-600" />
         </Button>
       )}
-      
+
       {showNext && (
         <Button
           variant="outline"
           size="lg"
-          className="absolute right-8 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full border-primary/30 hover:border-primary hover:shadow-interactive transition-all duration-300"
+          className="absolute right-20 top-1/2 transform -translate-y-1/2 
+                     w-12 h-12 rounded-full border-gray-300 hover:border-gray-400 
+                     hover:shadow-md transition-all duration-300 bg-white"
           onClick={onNext}
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-6 h-6 text-gray-600" />
         </Button>
       )}
     </>
