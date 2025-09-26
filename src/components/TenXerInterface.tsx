@@ -5,7 +5,6 @@ import CodeEditor from './CodeEditor';
 import NavigationControls from './NavigationControls';
 import AskInput from './AskInput';
 import { Home, ArrowLeft } from 'lucide-react';
-
 import rukaHandImage from '@/assets/rukaa.jpeg';
 import extraImage from '@/assets/side bar.jpg';
 import previewHandImage from '@/assets/robotic_hand1.jpg';
@@ -83,7 +82,6 @@ export default function TenXerInterface() {
   const handlePrevious = () => {
     if (currentIndex > 0) handleDotClick(currentIndex - 1);
   };
-
   const handleNext = () => {
     if (currentIndex < 2) handleDotClick(currentIndex + 1);
   };
