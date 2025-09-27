@@ -284,7 +284,7 @@ GENERAL:
 
       // Ruka pages (first/second)
       if (has('ruka', 'rukka')) {
-        const page = has('second', '2', 'two') ? 1 : 0;
+        const page = has('second', '2', 'two') ? 0 : 1;
         return { command: { action: 'navigate', target: 'ruka-hand', parameters: { page } }, response: `Opening Ruka Hand ${page === 0 ? 'first' : 'second'} page.` };
       }
 
