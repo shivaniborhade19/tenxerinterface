@@ -4,7 +4,9 @@ import RoboticHand from './RoboticHand';
 import CodeEditor from './CodeEditor';
 import NavigationControls from './NavigationControls';
 import AskInput from './AskInput';
-import { Home, ArrowLeft } from 'lucide-react';
+import ChatInterface from './ChatInterface';
+import { useNavigation } from '@/hooks/useNavigation';
+import { Home, ArrowLeft, MessageCircle, X } from 'lucide-react';
 import rukaHandImage from '@/assets/rukaa.jpeg';
 import extraImage from '@/assets/side bar.jpg';
 import previewHandImage from '@/assets/robotic_hand1.jpg';
@@ -30,6 +32,8 @@ export default function TenXerInterface() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [dotsClicked, setDotsClicked] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [disableTransition, setDisableTransition] = useState(false);
 
   const handlePointInteraction = (point: InteractivePoint) => {
     setSelectedPoint(point);
@@ -38,10 +42,14 @@ export default function TenXerInterface() {
   };
 
   const handleCloseCode = () => {
+    setDisableTransition(true);
     setSelectedPoint(null);
     setViewMode('landing');
-    setCurrentIndex(2);
+    setCurrentIndex(3);
     setDotsClicked(false);
+    // Re-enable transition after the immediate update
+    setTimeout(() => setDisableTransition(false), 50);
+
   };
 
   const handleHomeClick = () => {
@@ -51,14 +59,14 @@ export default function TenXerInterface() {
     } else {
       setVideoPlaying(false);
       setViewMode('landing');
-      setCurrentIndex(2);
+      setCurrentIndex(3);
     }
   };
 
   const handleExitClick = () => {
     setVideoPlaying(false);
     setViewMode('hand-preview');
-    setCurrentIndex(1);
+    setCurrentIndex(2);
   };
 
   const handleBackFromVideo = () => {
@@ -67,30 +75,57 @@ export default function TenXerInterface() {
     setCurrentIndex(0);
   };
 
-  const handleAskQuestion = (question: string) => {
-    console.log('User asked:', question);
-  };
-
   const handleDotClick = (index: number) => {
     setCurrentIndex(index);
     if (index === 0) setViewMode('ruka-hand');
-    else if (index === 1) setViewMode('hand-preview');
+    else if (index === 1) setViewMode('ruka-hand');
+    else if (index === 2) setViewMode('hand-preview');
     else setViewMode('landing');
-    setDotsClicked(index === 2);
+    setDotsClicked(index === 3);
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) handleDotClick(currentIndex - 1);
   };
+  
   const handleNext = () => {
-    if (currentIndex < 2) handleDotClick(currentIndex + 1);
+    if (currentIndex < 3) handleDotClick(currentIndex + 1);
+  };
+
+  // Initialize navigation hook
+  const { processPrompt, initializeGemini, isGeminiInitialized } = useNavigation(
+    {
+      currentView: viewMode,
+      currentIndex,
+      videoPlaying,
+      selectedPoint: selectedPoint?.id || null
+    },
+    {
+      setViewMode: (mode: string) => setViewMode(mode as ViewMode),
+      setCurrentIndex,
+      setVideoPlaying,
+      setSelectedPoint,
+      handleDotClick,
+      handleHomeClick,
+      handleExitClick,
+      handlePointInteraction
+    }
+  );
+
+  const handleAskQuestion = async (question: string) => {
+    if (isGeminiInitialized) {
+      return await processPrompt(question);
+    } else {
+      console.log('User asked:', question);
+      return 'Please setup Gemini API key to enable AI responses.';
+    }
   };
 
   // 🔥 Centralized search bar style
   const getSearchBarStyle = () => ({
     width: '50%',
     maxWidth: '800px',
-    left: viewMode === 'split' ? '70%' : '60%',
+    left: viewMode === 'split' ? '52%' : '52%',
     transform: 'translateX(-50%)',
     bottom: viewMode === 'split' ? '18px' : '28px',
   });
@@ -120,26 +155,39 @@ const handleBackgroundClick = () => {
                 <span className="text-sm text-foreground">Amazing Hand</span>
               </div>
             </div>
-
-            {/* Hand */}
-           {/* Hand */}
-          <div className="h-full flex items-center justify-center">
-            <div
-  className="cursor-pointer w-full h-full flex items-center justify-center"
-  onClick={handleBackgroundClick}   // ✅ click anywhere → video
->
+            <div className="absolute top-4 left-4 z-20">
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-bold text-foreground">TenXer</h1>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-sm text-foreground">Amazing Hand</span>
+              </div>
+            </div>
+            <iframe 
+            src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false" 
+            className='w-full h-full rounded=[20px]' 
+            allow='camera;microphone;autoplay;fullscreen'
+            />
+            <div 
+            className="absolute inset-0 top-0 left-0 w-full h-full"
+            onClick={handleBackgroundClick} // click anywhere → video
+  >
   <RoboticHand
-    onInteraction={handlePointInteraction} // ✅ dots → code
-    isInteractive
-  />
-</div>
+      onInteraction={handlePointInteraction} // dots → code
+      isInteractive
+    />
+
 
           </div>
 
-            {/* Search bar */}
             <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput onSubmit={handleAskQuestion} />
+              <AskInput 
+                onSubmit={handleAskQuestion}
+                onApiKeySubmit={initializeGemini}
+                isGeminiInitialized={isGeminiInitialized}
+              />
             </div>
+            
+            {/* AI Chat Toggle - Removed since chat is now integrated in search bar */}
           </div>
 
           {/* Right Card: Code */}
@@ -150,27 +198,55 @@ const handleBackgroundClick = () => {
             }}
           >
             <CodeEditor
-              code={selectedPoint.code}
+              
               title={selectedPoint.label}
               onClose={handleCloseCode}
             />
           </div>
         </div>
+
+        {/* Removed separate AI Chat Interface - now integrated in search bars */}
       </div>
     );
   }
 
+  // === Main Pages (Ruka → Preview → Landing/Hand with dots) ===
   // === Main Pages (Ruka → Preview → Landing/Hand with dots) ===
   return (
     <div className="min-h-screen bg-yellow-100 flex items-center justify-center p-8 relative">
       <div className="relative w-full max-w-7xl h-[90vh] overflow-hidden">
         {/* Slider container */}
         <div
-          className="flex w-[300%] h-full"
-          style={{ transform: `translateX(-${currentIndex * 33.3333}%)` }}
+          className={`flex w-full h-full ${!disableTransition ? 'transition-transform duration-500' : ''}`}
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
-          {/* Page 0: Ruka Hand */}
-          <div className="w-[33.3333%] flex-shrink-0 h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
+          {/* Page 0: New Ruka Hand Page */}
+          <div className="w-full flex-none h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
+            <div className="absolute top-4 left-4 z-10">
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-bold text-foreground">TenXer</h1>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-sm text-foreground">Ruka Hand</span>
+              </div>
+            </div>
+            <div className="flex-1 flex items-center justify-center">
+            <iframe 
+            src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false" 
+            className='w-full h-full rounded=[20px]' 
+            allow='camera;microphone;autoplay;fullscreen'
+            />
+            </div>
+            <div className="absolute" style={getSearchBarStyle()}>
+              <AskInput 
+                onSubmit={handleAskQuestion}
+                onApiKeySubmit={initializeGemini}
+                isGeminiInitialized={isGeminiInitialized}
+              />
+            </div>
+          </div>
+
+          {/* Page 1: Original Ruka Hand */}
+          <div className="w-full flex-none h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
             <div className="absolute top-4 left-4 z-10">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-bold text-foreground">TenXer</h1>
@@ -185,12 +261,16 @@ const handleBackgroundClick = () => {
               />
             </div>
             <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput onSubmit={handleAskQuestion} />
+              <AskInput 
+                onSubmit={handleAskQuestion}
+                onApiKeySubmit={initializeGemini}
+                isGeminiInitialized={isGeminiInitialized}
+              />
             </div>
           </div>
 
-          {/* Page 1: Amazing Hand Preview */}
-          <div className="w-[33.3333%] flex-shrink-0 h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
+          {/* Page 2: Amazing Hand Preview */}
+          <div className="w-full flex-none h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col justify-between relative">
             <div className="absolute top-4 left-4 z-10">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-bold text-foreground">TenXer</h1>
@@ -199,9 +279,16 @@ const handleBackgroundClick = () => {
               </div>
             </div>
             <div className="flex-1 flex items-center justify-center">
-              <div
+               <div
                 className="transition-transform duration-500 hover:scale-105 cursor-pointer"
-                onClick={() => handleDotClick(2)}
+                onClick={() => {
+                  setDisableTransition(true);
+                  setCurrentIndex(3);
+                  setViewMode('landing');
+                  setDotsClicked(true);
+                  // Re-enable transition after the immediate update
+                  setTimeout(() => setDisableTransition(false), 50);
+                }}
               >
                 <img
                   src={previewHandImage}
@@ -210,13 +297,13 @@ const handleBackgroundClick = () => {
               </div>
             </div>
             <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput onSubmit={handleAskQuestion} />
+              <AskInput onSubmit={(q) => handleAskQuestion(q)} />
             </div>
           </div>
-{/* Page 2: Landing (Hand with dots) */}
-<div className="w-[33.3333%] flex-shrink-0 h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col relative">
+{/* Page 3: Landing (Hand with dots) */}
+<div className="w-full flex-none h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col relative">
   {/* Header */}
-  <div className="absolute top-4 left-4 z-10">
+  <div className="absolute top-4 left-4 z-30"> {/* Increased z-index for visibility */}
     <div className="flex items-center gap-2">
       <h1 className="text-sm font-bold text-foreground">TenXer</h1>
       <span className="text-muted-foreground">|</span>
@@ -224,21 +311,40 @@ const handleBackgroundClick = () => {
     </div>
   </div>
 
-  {/* Hand + Extra Image */}
-  <div className="flex-1 flex flex-col items-center justify-end relative">
+   {/* Hand + Extra Image Container */}
+   <div className="flex-1 flex flex-col relative">
+    
+    {/* Full-size container for video, click handler, and dots (New structure) */}
+    <div className="absolute inset-0 w-full h-full rounded-[20px] overflow-hidden">
     {/* Hand Image (Landing click → Video) */}
-    <div
-      className="cursor-pointer transition-transform duration-500 hover:scale-105"
-      onClick={handleBackgroundClick}   // ✅ click here starts video
-    >
-      <RoboticHand
-        onInteraction={handlePointInteraction} // ✅ dots → split mode
-        isInteractive
+    {/* 1. Video Frame - Base Layer (z-index: 1) */}
+    <iframe 
+        src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false" 
+        className='w-full h-full' // Remove rounded-[20px] as parent handles it
+        allow='camera;microphone;autoplay;fullscreen'
+        style={{ zIndex: 1 }}
       />
-    </div>
+    {/* 2. Background Click Handler (Overlay) - Handles click to full-screen video (z-index: 5) */}
+      {/* This MUST be placed BEFORE RoboticHand so dots are on top. Dots' click will NOT bubble to this due to stopPropagation in RoboticHand.tsx */}
+      <div 
+        className="absolute inset-0 w-full h-full cursor-pointer"
+        onClick={handleBackgroundClick}   // ✅ click anywhere not covered by dots starts video
+        style={{ zIndex: 5 }} 
+      />
 
-    {/* Extra Image */}
-    <div className="mt-4 mb-24">
+      {/* 3. Robotic Hand (Dots) - Top Layer (z-index: 10) */}
+      {/* This div acts as a wrapper to place the dots on top of the background click handler. */}
+      <div className="absolute inset-0" style={{ zIndex: 10 }}> 
+        <RoboticHand
+          onInteraction={handlePointInteraction} // ✅ dots → split mode
+          isInteractive
+        />
+      </div>
+      </div>
+
+    {/* Extra Image - Positioned absolutely at the bottom to remain visible */}
+    {/* Changed to absolute positioning to not interfere with the full-screen absolute video/dot container */}
+    <div className="mt-4 mb-24 self-center absolute bottom-0 left-1/2 transform -translate-x-1/2 z-20">
       <img
         src={extraImage}
         alt="Extra Hand"
@@ -247,31 +353,34 @@ const handleBackgroundClick = () => {
     </div>
   </div>
 
-
             {/* Exit Button */}
-            <div className="absolute top-4 right-4 z-20">
-              <Button
-                onClick={handleExitClick}
-                variant="outline"
-                className="bg-white text-gray-700 border border-gray-300 hover:bg-gray-200 focus:ring-0"
-              >
-                Exit
-              </Button>
-            </div>
+            <div className="absolute top-4 right-4 z-40">
+                <Button
+                  onClick={handleExitClick}
+                  variant="outline"
+                  className="bg-white text-gray-700 border border-gray-300 hover:bg-gray-200 focus:ring-0"
+                >
+                  Exit
+                </Button>
+              </div>
 
             {/* Home Button */}
-            <div className="absolute bottom-16 right-28">
-              <Button
-                onClick={handleHomeClick}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-200 border-gray-300 text-white "
-              >
-                <Home className="w-5 h-5" /> Home
-              </Button>
-            </div>
+            <div className="absolute bottom-16 right-28 z-40">
+                <Button
+                  onClick={handleHomeClick}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 border-gray-300 text-white "
+                >
+                  <Home className="w-5 h-5" /> Home
+                </Button>
+              </div>
 
             {/* Search Bar */}
             <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput onSubmit={handleAskQuestion} />
+              <AskInput 
+                onSubmit={handleAskQuestion}
+                onApiKeySubmit={initializeGemini}
+                isGeminiInitialized={isGeminiInitialized}
+              />
             </div>
           </div>
         </div>
@@ -281,12 +390,12 @@ const handleBackgroundClick = () => {
           onPrevious={handlePrevious}
           onNext={handleNext}
           showPrevious={currentIndex > 0}
-          showNext={currentIndex !== 1 && currentIndex < 2}
+          showNext={currentIndex !== 2 && currentIndex < 3}
         />
 
         {/* Page Dots (Always visible) */}
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 z-30">
-          {[0, 1].map((index) => (
+          {[0, 1, 2].map((index) => (
             <div
               key={index}
               onClick={() => handleDotClick(index)}
@@ -307,16 +416,11 @@ const handleBackgroundClick = () => {
                 <span className="text-sm text-foreground">Amazing Hand</span>
               </div>
             </div>
-            <video
-              className="w-full h-full object-cover rounded-[20px]"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
-              <source src="/myvideo.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            <iframe 
+            src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false"
+            className='w-full h-full rounded=[20px]' 
+            allow='camera;microphone;autoplay;fullscreen'
+            />
             <div className="absolute top-4 right-4 z-20">
               <Button
                 onClick={handleExitClick}
@@ -343,10 +447,16 @@ const handleBackgroundClick = () => {
   </button>
 </div>
             <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput onSubmit={handleAskQuestion} />
+              <AskInput 
+                onSubmit={handleAskQuestion}
+                onApiKeySubmit={initializeGemini}
+                isGeminiInitialized={isGeminiInitialized}
+              />
             </div>
           </div>
         )}
+
+        {/* Removed separate AI Chat Interface - now integrated in search bars */}
       </div>
     </div>
   );
