@@ -143,9 +143,12 @@ const handleBackgroundClick = () => {
           <div
             className="bg-white rounded-[20px] shadow-md p-6 relative transition-all duration-500"
             style={{
-              width: dotsClicked ? '30%' : '55%',
+              width: '30%', // Keep size consistent
               minWidth: '220px',
+              transform: dotsClicked ? 'translateX(-80px)' : 'translateX(0)',
+              transition: 'transform 0.5s ease',
             }}
+            
           >
             {/* Header */}
             <div className="absolute top-4 left-4 z-10">
@@ -194,8 +197,13 @@ const handleBackgroundClick = () => {
           <div
             className="rounded-[20px] shadow-md transition-all duration-500"
             style={{
-              width: dotsClicked ? '70%' : '45%',
+              width: dotsClicked ? '75%' : '45%',
+              marginLeft: '-70px',
+              marginRight: '-90px',
+             
+              transition: 'all 0.5s ease',
             }}
+            
           >
             <CodeEditor
               
