@@ -13,8 +13,8 @@ export class GeminiClient {
 
   initialize(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
-    // Use a widely supported text model to avoid 404s on v1beta
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Use gemini-1.5-flash-latest which is the correct model name
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   }
 
   async analyzeNavigationIntent(prompt: string, context: NavigationContext): Promise<{

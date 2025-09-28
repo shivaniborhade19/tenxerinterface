@@ -142,49 +142,61 @@ const handleBackgroundClick = () => {
         <div className="flex w-full max-w-6xl h-[90vh] gap-6">
           {/* Left Card: Hand */}
           <div
-            className="bg-white rounded-[20px] shadow-md p-6 relative transition-all duration-500"
-            style={{
-              width: '30%', // Keep size consistent
-              minWidth: '220px',
-              transform: dotsClicked ? 'translateX(-80px)' : 'translateX(0)',
-              transition: 'transform 0.5s ease',
-            }}
-            
-          >
-            {/* Header */}
-            <div className="absolute top-4 left-4 z-10">
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm font-bold text-foreground">TenXer</h1>
-                <span className="text-muted-foreground">|</span>
-                <span className="text-sm text-foreground">Amazing Hand</span>
-              </div>
-            </div>
-            
-            <iframe 
-            src={import.meta.env.VITE_VIDEO_STREAM_URL}
-            className='w-full h-full rounded=[20px]' 
-            allow='camera;microphone;autoplay;fullscreen'
-            />
-            <div 
-            className="absolute inset-0 top-0 left-0 w-full h-full"
-            onClick={handleBackgroundClick} // click anywhere → video
+        className="bg-white rounded-[20px] shadow-md relative overflow-hidden transition-all duration-500"
+        style={{
+          width: '30%',
+          minWidth: '220px',
+          height: '100%',
+          transform: dotsClicked ? 'translateX(-80px)' : 'translateX(0)',
+          transition: 'transform 0.5s ease',
+        }}
+      >
+        {/* Header */}
+        <div className="absolute top-4 left-4 z-20">
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-bold text-foreground">TenXer</h1>
+            <span className="text-muted-foreground">|</span>
+            <span className="text-sm text-foreground">Amazing Hand</span>
+          </div>
+        </div>
+
+        <iframe
+          src={import.meta.env.VITE_VIDEO_STREAM_URL}
+          className="absolute rounded-[20px]"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            minWidth: '100%',
+            minHeight: '100%',
+            width: 'auto',
+            height: '100%',
+          }}
+          allow="camera;microphone;autoplay;fullscreen"
+        />
+
+  {/* Overlay for interaction */}
+  <div
+    className="absolute inset-0"
+    onClick={handleBackgroundClick}
   >
-  <RoboticHand
-      onInteraction={handlePointInteraction} // dots → code
+    <RoboticHand
+      onInteraction={handlePointInteraction}
       isInteractive
     />
+  </div>
 
+  {/* Search bar overlay */}
+  <div className="absolute z-30" style={getSearchBarStyle()}>
+    <AskInput
+      onSubmit={handleAskQuestion}
+      onApiKeySubmit={initializeGemini}
+      isGeminiInitialized={isGeminiInitialized}
+      isSplitMode={true}
+    />
+  </div>
 
-          </div>
-
-            <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput 
-                onSubmit={handleAskQuestion}
-                onApiKeySubmit={initializeGemini}
-                isGeminiInitialized={isGeminiInitialized}
-              />
-            </div>
-            
             {/* AI Chat Toggle - Removed since chat is now integrated in search bar */}
           </div>
 
@@ -235,7 +247,7 @@ const handleBackgroundClick = () => {
             <div className="flex-1 flex items-center justify-center">
             <iframe 
             src={import.meta.env.VITE_VIDEO_STREAM_URL}
-            className='w-full h-full rounded=[20px]' 
+            className='w-full h-full ' 
             allow='camera;microphone;autoplay;fullscreen'
             />
             </div>
@@ -299,9 +311,13 @@ const handleBackgroundClick = () => {
                 />
               </div>
             </div>
-            <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput onSubmit={(q) => handleAskQuestion(q)} />
-            </div>
+            <div className="absolute z-50" style={getSearchBarStyle()}>
+  <AskInput 
+    onSubmit={handleAskQuestion}
+    onApiKeySubmit={initializeGemini}
+    isGeminiInitialized={isGeminiInitialized}
+  />
+</div>
           </div>
 {/* Page 3: Landing (Hand with dots) */}
 <div className="w-full flex-none h-full bg-white rounded-[20px] shadow-md p-6 flex flex-col relative">
@@ -378,13 +394,13 @@ const handleBackgroundClick = () => {
               </div>
 
             {/* Search Bar */}
-            <div className="absolute" style={getSearchBarStyle()}>
-              <AskInput 
-                onSubmit={handleAskQuestion}
-                onApiKeySubmit={initializeGemini}
-                isGeminiInitialized={isGeminiInitialized}
-              />
-            </div>
+<div className="absolute z-50 pointer-events-auto" style={getSearchBarStyle()}>
+  <AskInput 
+    onSubmit={handleAskQuestion}
+    onApiKeySubmit={initializeGemini}
+    isGeminiInitialized={isGeminiInitialized}
+  />
+</div>
           </div>
         </div>
 
@@ -411,7 +427,7 @@ const handleBackgroundClick = () => {
 
         {/* Video overlay */}
         {viewMode === 'video-only' && (
-          <div className="absolute inset-0 flex flex-col justify-between bg-white rounded-[20px] p-6">
+          <div className="absolute inset-0 flex flex-col justify-between bg-white rounded-[20px] py-6">
             <div className="absolute top-4 left-4 z-20">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-bold text-foreground">TenXer</h1>
@@ -421,7 +437,7 @@ const handleBackgroundClick = () => {
             </div>
             <iframe 
              src={import.meta.env.VITE_VIDEO_STREAM_URL}
-            className='w-full h-full rounded=[20px]' 
+            className='w-full h-full rounded-[20px]' 
             allow='camera;microphone;autoplay;fullscreen'
             />
             <div className="absolute top-4 right-4 z-20">
@@ -441,7 +457,7 @@ const handleBackgroundClick = () => {
                 <Home className="w-5 h-5" /> Home
               </Button>
             </div>
-            <div className="absolute top-1/2 left-6 -translate-y-1/2 z-20">
+            <div className="absolute top-1/2 left-2 -translate-y-1/2 z-20">
   <button
     onClick={handleBackFromVideo}
     className="w-12 h-12 flex items-center justify-center rounded-full bg-white border border-gray-300 shadow hover:bg-gray-200 transition"

@@ -164,10 +164,10 @@ export class MCPServer {
         break;
 
       case 'get_info':
-        const response = await this.geminiClient.getGeneralResponse(args.query);
+        // General Q&A disabled: return guidance instead of calling Gemini
         return {
           id: request.id,
-          result: { response }
+          result: { response: "General Q&A is disabled for this demo. Use navigation commands like 'go to ruka hand', 'next page', 'open split', 'home', or 'click dot 1'." }
         };
     }
 
@@ -247,12 +247,19 @@ GENERAL:
 
     // Check if this is likely a UI/navigation command vs general question
     const navigationKeywords = [
-      'go', 'open', 'show', 'navigate', 'switch', 'next', 'back', 'previous', 
-      'ruka', 'rukka', 'amazing', 'interactive', 'hand', 'video', 'live', 'split', 'code', 'editor',
-      'dot', 'point', 'click', 'page', 'home', 'exit', 'close'
+      'go to', 'open', 'show me', 'navigate', 'switch', 'next', 'back', 'previous', 
+      'click', 'page', 'home', 'exit', 'close', 'split', 'editor'
+    ];
+    
+    const informationKeywords = [
+      'what is', 'tell me about', 'information about', 'explain', 'describe', 'how does', 'why'
     ];
     
     const isLikelyNavigation = navigationKeywords.some(keyword => 
+      prompt.toLowerCase().includes(keyword)
+    );
+    
+    const isInformationRequest = informationKeywords.some(keyword =>
       prompt.toLowerCase().includes(keyword)
     );
 
@@ -282,19 +289,19 @@ GENERAL:
         return { command: { action: 'navigate', target: 'next' }, response: 'Moving to next page.' };
       }
 
-      // Ruka pages (first/second)
-      if (has('ruka', 'rukka')) {
-        const page = has('second', '2', 'two') ? 0 : 1;
+      // Ruka pages (first/second) - only for explicit navigation
+      if (has('go to ruka', 'open ruka', 'show ruka', 'navigate ruka') || (has('ruka', 'rukka') && (has('go', 'open', 'show', 'navigate')))) {
+        const page = has('first', '1', 'one') ? 0 : 1;
         return { command: { action: 'navigate', target: 'ruka-hand', parameters: { page } }, response: `Opening Ruka Hand ${page === 0 ? 'first' : 'second'} page.` };
       }
 
-      // Amazing hand preview
-      if (has('amazing', 'preview')) {
+      // Amazing hand preview - only for explicit navigation
+      if (has('go to amazing', 'open amazing', 'show me amazing', 'navigate amazing') || (has('amazing') && (has('go', 'open', 'show me', 'navigate')))) {
         return { command: { action: 'navigate', target: 'amazing-hand' }, response: 'Opening Amazing Hand.' };
       }
 
-      // Interactive landing with dots
-      if (has('interactive', 'dots', 'landing')) {
+      // Interactive landing with dots - only for explicit navigation
+      if (has('go to interactive', 'open interactive', 'show interactive', 'navigate interactive') || (has('interactive', 'dots', 'landing') && (has('go', 'open', 'show', 'navigate')))) {
         return { command: { action: 'navigate', target: 'interactive-hand' }, response: 'Opening Interactive Hand.' };
       }
 
@@ -320,7 +327,18 @@ GENERAL:
       const local = localParse();
       if (local) return local;
 
-      if (isLikelyNavigation) {
+      // If it's clearly an information request, skip navigation analysis
+      if (isInformationRequest) {
+        try {
+          const generalResponse = await this.geminiClient.getGeneralResponse(prompt);
+          return { response: generalResponse };
+        } catch (generalError) {
+          console.error('General response error:', generalError);
+          // Fall through to fallback
+        }
+      }
+
+      if (isLikelyNavigation && !isInformationRequest) {
         // For navigation-related prompts, use AI analysis
         try {
           const analysis = await this.geminiClient.analyzeNavigationIntent(prompt, context);
@@ -347,13 +365,13 @@ GENERAL:
         }
       }
 
-      // For general questions or failed navigation analysis, use general response
+      // Try to get a general response from Gemini for information requests
       try {
         const generalResponse = await this.geminiClient.getGeneralResponse(prompt);
         return { response: generalResponse };
       } catch (generalError) {
         console.error('General response error:', generalError);
-        // Fall through to fallback
+        return { response: "I'm sorry, I couldn't process your question right now. You can also try navigation commands like: 'go to ruka hand', 'amazing hand', 'interactive hand', etc." };
       }
 
       // Final fallback
@@ -363,7 +381,7 @@ GENERAL:
         };
       } else {
         return {
-          response: "I'm an AI assistant for this robotic hand interface. I can help you navigate between pages or answer questions about robotics and AI. What would you like to know?"
+          response: "This assistant is for UI navigation only. Try: 'go to ruka hand', 'amazing hand', 'interactive hand', 'next', 'back', 'home', 'open split', or 'click dot 1'."
         };
       }
     } catch (error) {

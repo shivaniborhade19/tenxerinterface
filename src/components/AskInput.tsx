@@ -14,13 +14,15 @@ interface AskInputProps {
   onApiKeySubmit?: (apiKey: string) => void;
   isGeminiInitialized?: boolean;
   className?: string;
+  isSplitMode?: boolean;
 }
 
 export default function AskInput({ 
   onSubmit, 
   onApiKeySubmit, 
   isGeminiInitialized = false, 
-  className 
+  className,
+  isSplitMode = false
 }: AskInputProps) {
   const [value, setValue] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -131,7 +133,11 @@ export default function AskInput({
     <div className="w-full relative">
       {/* Chat History */}
       {showChat && messages.length > 0 && (
-        <div className="absolute bottom-full mb-2 left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+        <div className={`absolute bottom-full mb-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50 ${
+          isSplitMode 
+            ? 'left-0 w-96 min-w-96' // Fixed width extending beyond the container in split mode
+            : 'left-0 right-0' // Normal responsive width
+        }`}>
           <div className="flex items-center justify-between p-3 border-b border-gray-200">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
