@@ -86,6 +86,7 @@ export default {
           '0%, 100%': { boxShadow: '0 0 20px hsl(193 100% 50% / 0.4)' },
           '50%': { boxShadow: '0 0 40px hsl(193 100% 50% / 0.8)' }
         },
+        
         'slide-in-right': {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' }
@@ -100,6 +101,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'float': 'float 3s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'image-hint-zoom': 'image-hint-zoom 1.5s ease-in-out infinite',
         wiggle: 'wiggle 1s ease-in-out infinite'
       },
       backgroundImage: {

@@ -34,6 +34,7 @@ export default function TenXerInterface() {
   const [dotsClicked, setDotsClicked] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [disableTransition, setDisableTransition] = useState(false);
+ 
 
   const handlePointInteraction = (point: InteractivePoint) => {
     setSelectedPoint(point);
@@ -158,15 +159,9 @@ const handleBackgroundClick = () => {
                 <span className="text-sm text-foreground">Amazing Hand</span>
               </div>
             </div>
-            <div className="absolute top-4 left-4 z-20">
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm font-bold text-foreground">TenXer</h1>
-                <span className="text-muted-foreground">|</span>
-                <span className="text-sm text-foreground">Amazing Hand</span>
-              </div>
-            </div>
+            
             <iframe 
-            src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false" 
+            src={import.meta.env.VITE_VIDEO_STREAM_URL}
             className='w-full h-full rounded=[20px]' 
             allow='camera;microphone;autoplay;fullscreen'
             />
@@ -239,7 +234,7 @@ const handleBackgroundClick = () => {
             </div>
             <div className="flex-1 flex items-center justify-center">
             <iframe 
-            src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false" 
+            src={import.meta.env.VITE_VIDEO_STREAM_URL}
             className='w-full h-full rounded=[20px]' 
             allow='camera;microphone;autoplay;fullscreen'
             />
@@ -288,7 +283,7 @@ const handleBackgroundClick = () => {
             </div>
             <div className="flex-1 flex items-center justify-center">
                <div
-                className="transition-transform duration-500 hover:scale-105 cursor-pointer"
+                
                 onClick={() => {
                   setDisableTransition(true);
                   setCurrentIndex(3);
@@ -327,7 +322,7 @@ const handleBackgroundClick = () => {
     {/* Hand Image (Landing click → Video) */}
     {/* 1. Video Frame - Base Layer (z-index: 1) */}
     <iframe 
-        src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false" 
+        src={import.meta.env.VITE_VIDEO_STREAM_URL} 
         className='w-full h-full' // Remove rounded-[20px] as parent handles it
         allow='camera;microphone;autoplay;fullscreen'
         style={{ zIndex: 1 }}
@@ -425,7 +420,7 @@ const handleBackgroundClick = () => {
               </div>
             </div>
             <iframe 
-            src="https://media1.evmlabs.com/stream/live_video.html?room=1234&audio=false&username=null&remote_stream=null&debug=false"
+             src={import.meta.env.VITE_VIDEO_STREAM_URL}
             className='w-full h-full rounded=[20px]' 
             allow='camera;microphone;autoplay;fullscreen'
             />

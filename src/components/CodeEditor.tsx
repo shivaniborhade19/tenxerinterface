@@ -24,7 +24,7 @@ export default function CodeEditor({ title, onClose }: CodeEditorProps) {
       {/* Video Content */}
       <div className="flex-1 overflow-auto p-2">
         <iframe
-          src="https://epyipc.tenxerlabs.com/code-server/"
+          src={import.meta.env.VITE_Vs_STREAM_URL}
           className="w-full h-full rounded-lg"
           
         />
