@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import RoboticHand from './RoboticHand';
 import CodeEditor from './CodeEditor';
@@ -34,6 +34,7 @@ export default function TenXerInterface() {
   const [dotsClicked, setDotsClicked] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [disableTransition, setDisableTransition] = useState(false);
+  const [showHintAnimation, setShowHintAnimation] = useState(false);
  
 
   const handlePointInteraction = (point: InteractivePoint) => {
@@ -134,7 +135,18 @@ const handleBackgroundClick = () => {
   setVideoPlaying(true);
   setViewMode('video-only');
 };
-
+// Trigger hint animation after 5 seconds when on amazing hand page
+useEffect(() => {
+  if (viewMode === 'hand-preview' && currentIndex === 2) {
+    const timer = setTimeout(() => {
+      setShowHintAnimation(true);
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  } else {
+    setShowHintAnimation(false);
+  }
+}, [viewMode, currentIndex]);
   // === Split view (Hand + Code side-by-side) ===
   if (viewMode === 'split' && selectedPoint) {
     return (
@@ -143,6 +155,7 @@ const handleBackgroundClick = () => {
           {/* Left Card: Hand */}
           <div
         className="bg-white rounded-[20px] shadow-md relative overflow-hidden transition-all duration-500"
+        
         style={{
           width: '30%',
           minWidth: '220px',
@@ -241,7 +254,7 @@ const handleBackgroundClick = () => {
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-bold text-foreground">TenXer</h1>
                 <span className="text-muted-foreground">|</span>
-                <span className="text-sm text-foreground">Ruka Hand</span>
+                <span className="text-sm text-foreground">Amazing Hand</span>
               </div>
             </div>
             <div className="flex-1 flex items-center justify-center">
@@ -294,7 +307,10 @@ const handleBackgroundClick = () => {
               </div>
             </div>
             <div className="flex-1 flex items-center justify-center">
-               <div
+            <div
+                className={`transition-transform duration-500 hover:scale-105 cursor-pointer ${
+                  showHintAnimation ? 'animate-image-hint-zoom' : ''
+                }`}
                 
                 onClick={() => {
                   setDisableTransition(true);

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -86,7 +87,14 @@ export default {
           '0%, 100%': { boxShadow: '0 0 20px hsl(193 100% 50% / 0.4)' },
           '50%': { boxShadow: '0 0 40px hsl(193 100% 50% / 0.8)' }
         },
-        
+        'image-hint-zoom': {
+          '0%, 100%': { 
+            transform: 'scale(1)'
+          },
+          '50%': { 
+            transform: 'scale(1.05)'
+          }
+        },
         'slide-in-right': {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' }
@@ -116,5 +124,5 @@ export default {
       }
     }
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

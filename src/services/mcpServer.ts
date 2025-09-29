@@ -245,6 +245,17 @@ GENERAL:
 
     const context = this.navigationCallbacks.getContext();
 
+    // Check for specific patterns that should auto-open split mode
+    const changeKeywords = ['change', 'edit', 'modify', 'customize', 'update', 'code', 'programming', 'alter'];
+    const handKeywords = ['hand', 'finger', 'joint', 'movement', 'robotic hand', 'tenxer'];
+    const makeChangesPattern = changeKeywords.some(change => 
+      prompt.toLowerCase().includes(change.toLowerCase())
+    ) && handKeywords.some(hand => 
+      prompt.toLowerCase().includes(hand.toLowerCase())
+    );
+    
+    console.log('Checking for changes pattern:', makeChangesPattern, 'prompt:', prompt);
+
     // Check if this is likely a UI/navigation command vs general question
     const navigationKeywords = [
       'go to', 'open', 'show me', 'navigate', 'switch', 'next', 'back', 'previous', 
@@ -327,8 +338,31 @@ GENERAL:
       const local = localParse();
       if (local) return local;
 
+      // Special handling for "make changes" type questions
+      if (makeChangesPattern) {
+        console.log('Detected make changes pattern, attempting to open split mode');
+        try {
+          const analysis = await this.geminiClient.analyzeNavigationIntent(prompt, context);
+          console.log('AI Analysis for changes question:', analysis);
+          
+          // Always open split mode for change-related questions, regardless of confidence
+          const result = { 
+            command: { action: 'navigate' as const, target: 'split' },
+            response: analysis.response || "To make changes to the robotic hand, you'll need the code editor. Let me open split mode where you can see the hand and edit its code simultaneously!"
+          };
+          console.log('Returning result with split command:', result);
+          return result;
+        } catch (error) {
+          console.error('Error analyzing changes question:', error);
+          return { 
+            command: { action: 'navigate' as const, target: 'split' },
+            response: "To make changes to the robotic hand, you'll need the code editor. Opening split mode now where you can edit the hand's behavior and movements!"
+          };
+        }
+      }
+
       // If it's clearly an information request, skip navigation analysis
-      if (isInformationRequest) {
+      if (isInformationRequest && !makeChangesPattern) {
         try {
           const generalResponse = await this.geminiClient.getGeneralResponse(prompt);
           return { response: generalResponse };
